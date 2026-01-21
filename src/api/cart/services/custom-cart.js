@@ -1,53 +1,66 @@
 'use strict';
 
 module.exports = {
-  async addToCart(userId, productId, quantity) {
-    const product = await strapi.entityService.findOne(
-      'api::product.product',
-      productId
-    );
+async addToCart(userId, productId, quantity) {
+  if (quantity <= 0) {
+    throw new Error('Quantity must be greater than zero');
+  }
 
-    if (!product || product.stock < quantity) {
-      throw new Error('Product unavailable');
+  const product = await strapi.entityService.findOne(
+    'api::product.product',
+    productId
+  );
+
+  if (!product || !product.isActive) {
+    throw new Error('Product unavailable');
+  }
+
+  const existingItems = await strapi.entityService.findMany(
+    'api::cart.cart',
+    {
+      filters: {
+        user: { id: userId },
+        product: { id: productId },
+      },
+      limit: 1,
     }
+  );
 
-   
-    const existingItems = await strapi.entityService.findMany(
+  let finalQuantity = quantity;
+
+  if (existingItems.length > 0) {
+    finalQuantity = existingItems[0].quantity + quantity;
+  }
+
+
+  if (finalQuantity > product.stock) {
+    throw new Error(`Only ${product.stock} items available in stock`);
+  }
+
+  if (existingItems.length > 0) {
+    return await strapi.entityService.update(
       'api::cart.cart',
+      existingItems[0].id,
       {
-        filters: {
-          user: { id: userId },
-          product: { id: productId },
+        data: {
+          quantity: finalQuantity,
         },
       }
     );
+  }
 
-    if (existingItems.length > 0) {
-      
-      const existingItem = existingItems[0];
-      return await strapi.entityService.update(
-        'api::cart.cart',
-        existingItem.id,
-        {
-          data: {
-            quantity: existingItem.quantity + quantity,
-          },
-        }
-      );
-    } else {
-     
-      return await strapi.entityService.create(
-        'api::cart.cart',
-        {
-          data: {
-            user: { id: userId },
-            product: { id: productId },
-            quantity,
-          },
-        }
-      );
+  return await strapi.entityService.create(
+    'api::cart.cart',
+    {
+      data: {
+        user: { id: userId },
+        product: { id: productId },
+        quantity,
+      },
     }
-  },
+  );
+},
+
 
   async getCart(userId) {
     const cartItems = await strapi.entityService.findMany(
@@ -56,7 +69,7 @@ module.exports = {
         filters: { user: { id: userId } },
         populate: {
           product: {
-            populate: '*' 
+              fields: ['name', 'price', 'description'],
           }
         },
       }

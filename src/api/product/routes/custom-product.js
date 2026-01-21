@@ -6,31 +6,57 @@ module.exports = {
       method: 'POST',
       path: '/products/addproduct',
       handler: 'custom-product.addProduct',
-      config: { auth: false },
+      
     },
     {
       method: 'GET',
       path: '/products/in-stock',
       handler: 'custom-product.inStock',
-      config: { auth: false },
+      
+    },
+    {
+      method: 'GET',
+      path: '/admin/products/insights',
+      handler: 'custom-product.productInsights',
+      config: {
+        auth: {
+          scope: ['admin'],
+        },
+      },
+    },
+
+    {
+      method: 'GET',
+      path: '/products/name/:name',
+      handler: 'custom-product.getSingleProductByName',
+      
     },
     {
       method: 'GET',
       path: '/products/:id',
       handler: 'custom-product.getSingleProduct',
-      config: { auth: false },
+      
     },
+
     {
       method: 'PUT',
       path: '/products/:id/stock',
       handler: 'custom-product.updateStock',
-      config: { auth: false },
+      config: {
+        auth: {
+          scope: ['admin'],
+        },
+      },
     },
     {
       method: 'DELETE',
       path: '/products/:id',
       handler: 'custom-product.deleteProduct',
-      config: { auth: false },
+      config: {
+        auth: {
+          scope: ['admin'],
+        },
+      },
     }
   ],
 };

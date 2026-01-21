@@ -22,11 +22,46 @@ module.exports = {
       data: products,
     };
   },
+
+  async productInsights(ctx) {
+    const products = await strapi
+      .service('api::product.custom-product')
+      .getProductInsights();
+
+    ctx.body = {
+      success: true,
+      data: products,
+    };
+  },
+
   async getSingleProduct(ctx) {
     const { id } = ctx.params;
     const product = await strapi
       .service('api::product.custom-product')
       .getSingleProduct(id);
+    console.log(ctx.params);    
+
+    if (!product) {
+      ctx.status = 404;
+      ctx.body = {
+        success: false,
+        message: 'Product not found or inactive',
+      };
+      return;
+    }
+    
+    ctx.body = {
+      success: true,
+      data: product,
+    };
+  },
+
+    async getSingleProductByName(ctx) {
+    const { name } = ctx.query;
+    const product = await strapi
+      .service('api::product.custom-product')
+      .getSingleProductByName(name);
+    console.log(ctx.params);  
 
     if (!product) {
       ctx.status = 404;
