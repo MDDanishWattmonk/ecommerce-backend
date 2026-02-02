@@ -1,13 +1,15 @@
 'use strict';
 
 module.exports = {
-
+  
   async place(ctx) {
     const user = ctx.state.user;
+    console.log('Placing order for user:', user.id, 'Email:', user.email);
 
     const order = await strapi
       .service('api::order.custom-order')
       .placeOrder(user.id);
+      console.log(' Order created:', order.id);
 
     ctx.body = {
       success: true,

@@ -3,9 +3,6 @@
 module.exports = {
 
   async addProduct(productData) {
-    // if(productData.stock < 0) {
-    //   throw new Error ("Stock cannot be lessthan zero")
-    // }
     return await strapi.entityService.create(
       'api::product.product',{
         data: productData,
@@ -51,7 +48,6 @@ module.exports = {
 
     return products.map(product => {
       const purchases = product.Product.map(item => {
-        // const order = item.orders?.[0];
         const order = item.orders;
         const user = order?.user;
 
